@@ -1,6 +1,6 @@
 import { WorkerEntrypoint } from 'cloudflare:workers';
 import { ProxyToSelf } from 'workers-mcp';
-import { listFiles, listDriveFiles, listRootContents, getCurrentFolder, listFoldersWithDetails } from './gdrive';
+import { listFiles, listDriveFiles, listRootContents, getCurrentFolder, listFoldersWithDetails, listFilesAndFolders } from './gdrive';
 
 interface Env {
 	GOOGLE_CLIENT_EMAIL: string;
@@ -47,21 +47,16 @@ export default class MyWorker extends WorkerEntrypoint<Env> {
 	}
 
 	/**
-	 * List all files in a specific folder
-	 * @param {string} folderId - The ID of the folder to list files from
-	 * @return {string} JSON string containing list of files in the specified folder. Each object contains {name: string, id: string}
+	 * List all files and folders in a specific folder
+	 * @param {string} folderId - The ID of the folder to list contents from
+	 * @return {string} JSON string containing list of files and folders. Each object contains {name: string, id: string, mimeType: string, isFolder: boolean}
 	 */
 	async listFilesInFolder(folderId: string): Promise<string> {
 		initializeEnv(this.env);
-		console.log('Listing files in folder:', folderId);
-		const files = await listFiles(this.env, folderId);
-		console.log('Found files:', files);
-		return JSON.stringify(
-			files.map((file) => ({
-				name: file.name,
-				id: file.id,
-			}))
-		);
+		console.log('Listing contents in folder:', folderId);
+		const contents = await listFilesAndFolders(this.env, folderId);
+		console.log('Found contents:', contents);
+		return JSON.stringify(contents);
 	}
 
 	/**
