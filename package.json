@@ -1,22 +1,26 @@
 {
-  "name": "ise-mcp",
-  "version": "0.0.0",
-  "private": true,
-  "scripts": {
-    "deploy": "workers-mcp docgen src/index.ts && wrangler deploy",
-    "dev": "wrangler dev",
-    "start": "wrangler dev",
-    "test": "vitest",
-    "cf-typegen": "wrangler types"
-  },
-  "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.7.5",
-    "@cloudflare/workers-types": "^4.20250402.0",
-    "typescript": "^5.5.2",
-    "vitest": "~3.0.7",
-    "wrangler": "^4.6.0"
-  },
-  "dependencies": {
-    "workers-mcp": "^0.0.13"
-  }
+	"name": "ise-mcp",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"deploy": "workers-mcp docgen src/index.ts && wrangler deploy",
+		"dev": "wrangler dev",
+		"start": "wrangler dev",
+		"test": "vitest",
+		"cf-typegen": "wrangler types"
+	},
+	"devDependencies": {
+		"@cloudflare/vitest-pool-workers": "^0.7.5",
+		"@cloudflare/workers-types": "^4.20250402.0",
+		"@types/node": "^22.13.17",
+		"typescript": "^5.5.2",
+		"vitest": "~3.0.7",
+		"wrangler": "^4.6.0"
+	},
+	"dependencies": {
+		"cloudflare-workers-and-google-oauth": "^2.0.0",
+		"googleapis": "^144.0.0",
+		"path": "^0.12.7",
+		"workers-mcp": "^0.0.13"
+	}
 }
