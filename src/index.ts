@@ -1,6 +1,7 @@
 import { WorkerEntrypoint } from 'cloudflare:workers';
 import { ProxyToSelf } from 'workers-mcp';
 import { listFiles, listDriveFiles, listRootContents, getCurrentFolder, listFoldersWithDetails, listFilesAndFolders } from './gdrive';
+import { FileParser } from './FileParser';
 
 interface Env {
 	GOOGLE_CLIENT_EMAIL: string;
@@ -105,5 +106,65 @@ export default class MyWorker extends WorkerEntrypoint<Env> {
 				mimeType: folder.mimeType,
 			}))
 		);
+	}
+
+	/**
+	 * Parse a file from Google Drive by file ID
+	 * @param {string} fileId - The ID of the file to parse
+	 * @return {string} JSON string containing parsed content and metadata. Structure: {success: boolean, data?: ParsedContent, error?: string}
+	 */
+	async parseFile(fileId: string): Promise<string> {
+		initializeEnv(this.env);
+		console.log('Parsing file:', fileId);
+		const result = await FileParser.parseFileFromDrive(fileId, this.env);
+		console.log('Parse result:', result.success ? 'success' : `error: ${result.error}`);
+		return JSON.stringify(result);
+	}
+
+	/**
+	 * Get supported file types for parsing
+	 * @return {string} JSON string containing array of supported MIME types
+	 */
+	async getSupportedFileTypes(): Promise<string> {
+		const supportedTypes = FileParser.getSupportedFileTypes();
+		return JSON.stringify(supportedTypes);
+	}
+
+	/**
+	 * Parse a file and extract key information (summary, keywords, headings, etc.)
+	 * @param {string} fileId - The ID of the file to parse and analyze
+	 * @return {string} JSON string containing parsed content, metadata, and extracted key information
+	 */
+	async parseAndAnalyzeFile(fileId: string): Promise<string> {
+		initializeEnv(this.env);
+		console.log('Parsing and analyzing file:', fileId);
+
+		const parseResult = await FileParser.parseFileFromDrive(fileId, this.env);
+		if (!parseResult.success) {
+			return JSON.stringify(parseResult);
+		}
+
+		const keyInfo = FileParser.extractKeyInformation(parseResult.data!);
+
+		const result = {
+			success: true,
+			data: {
+				...parseResult.data,
+				analysis: keyInfo,
+			},
+		};
+
+		console.log('Analysis complete for file:', fileId);
+		return JSON.stringify(result);
+	}
+
+	/**
+	 * Check if a file type is supported for parsing
+	 * @param {string} mimeType - The MIME type to check
+	 * @return {string} JSON string containing boolean result
+	 */
+	async isFileTypeSupported(mimeType: string): Promise<string> {
+		const isSupported = FileParser.isSupportedFileType(mimeType);
+		return JSON.stringify({ supported: isSupported, mimeType });
 	}
 }
